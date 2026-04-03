@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sentinel AI | Review Forensic Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Plus+Jakarta+Sans:wght@300;400;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --bg: #050505; }
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* 1. BOLD QUOTE STYLING */
+        .main-quote {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(0, 242, 255, 0.4);
+        }
+
+        /* 2. COMPULSORY GLOW FOR URL BOX */
+        .glow-input-wrapper {
+            position: relative;
+            transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-input-wrapper:hover, .glow-input-wrapper:focus-within {
+            border-color: var(--neon);
+            box-shadow: 0 0 40px rgba(0, 242, 255, 0.3);
+            transform: scale(1.02);
+        }
+
+        .page-transition { transition: all 0.6s ease-in-out; }
+        .hidden { display: none; opacity: 0; }
+        
+        .btn-glow:hover {
+            box-shadow: 0 0 20px var(--neon);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center">
+
+    <div id="page1" class="page-transition w-full max-w-4xl text-center px-6">
+        <h1 class="main-quote font-black mb-6">"CHOOSE WISELY NOT BLINDLY"</h1>
+        
+        <div class="max-w-2xl mx-auto mb-10 text-gray-400 space-y-4 text-lg leading-relaxed">
+            <p>In the digital age, **90% of consumers** are influenced by online reviews. However, thousands of products are manipulated by bot networks and paid farms to deceive you.</p>
+            <p>Our AI analyzes linguistic patterns, reviewer metadata, and sentiment anomalies to expose the truth behind the stars.</p>
+        </div>
+
+        <button onclick="goToScanner()" class="btn-glow bg-white text-black font-extrabold px-16 py-5 rounded-full text-sm uppercase tracking-[4px] transition-all">
+            Analyze Now
+        </button>
+    </div>
+
+    <div id="page2" class="page-transition hidden w-full max-w-3xl px-6 text-center">
+        <p class="text-cyan-400 font-bold tracking-[5px] text-xs mb-4 uppercase">Forensic Input Module</p>
+        <h2 class="text-4xl font-extrabold mb-10">Paste Product Link</h2>
+
+        <div class="glow-input-wrapper bg-white/5 p-2 rounded-2xl mb-8">
+            <input type="text" id="urlInput" 
+                   placeholder="Enter Amazon or Flipkart URL here..." 
+                   class="w-full bg-transparent p-5 text-white outline-none placeholder-gray-600 text-lg">
+        </div>
+
+        <button onclick="startAudit()" class="btn-glow bg-cyan-500 text-black font-black px-12 py-4 rounded-xl uppercase tracking-widest text-sm transition-all">
+            Scan for Deception
+        </button>
+
+        <div id="resultCard" class="hidden mt-12 p-10 rounded-3xl bg-white/5 border border-white/10">
+            <div id="loaderBar" class="h-1 bg-cyan-400 mb-6 shadow-[0_0_15px_#00f2ff] transition-all duration-[2000ms]" style="width: 0%"></div>
+            <h3 id="statusText" class="text-xl font-bold mb-2 uppercase tracking-tighter">Initializing AI...</h3>
+            <div id="scoreDisplay" class="text-6xl font-black text-white my-4">--</div>
+            <p id="verdictText" class="text-gray-400 text-sm"></p>
+        </div>
+    </div>
+
+    <script>
+        
+function goToScanner() {
+    document.getElementById('page1').classList.add('opacity-0');
+    setTimeout(() => {
+        document.getElementById('page1').style.display = 'none';
+        const p2 = document.getElementById('page2');
+        p2.classList.remove('hidden');
+        setTimeout(() => p2.classList.remove('opacity-0'), 50);
+    }, 600);
+}
+
+async function startAudit() {
+    const url = document.getElementById('urlInput').value;
+    if (!url) { 
+        alert("Please provide a URL."); 
+        return; 
+    }
+
+    const card = document.getElementById('resultCard');
+    const loader = document.getElementById('loaderBar');
+
+    card.classList.remove('hidden');
+    loader.style.width = "100%";
+    loader.style.opacity = "1";
+
+    document.getElementById('statusText').innerText = "Connecting to Neural Server...";
+
+    try {
+        const response = await fetch('/analyze' , {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: url })
+        });
+
+        const data = await response.json();
+
+        if (data.status === "success") {
+            document.getElementById('scoreDisplay').innerText = data.score + "% Trust";
+            document.getElementById('statusText').innerText = data.verdict;
+            document.getElementById('verdictText').innerText = "Product: " + data.product;
+            document.getElementById('scoreDisplay').style.color =
+                data.score < 50 ? "#ff4d4d" : "#00f2ff";
+        } else {
+            document.getElementById('statusText').innerText = "Scan Failed";
+            document.getElementById('verdictText').innerText = "Check if the URL is valid.";
+        }
+
+    } catch (error) {
+        document.getElementById('statusText').innerText = "Backend Offline";
+        document.getElementById('verdictText').innerText = "Please run 'python app.py' on your terminal.";
+    }
+
+    loader.style.opacity = "0";
+}
+</script>
+    
+
+</body>
+</html>
